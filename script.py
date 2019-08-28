@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 import pandas as pd
 from jinja2 import Environment, PackageLoader, select_autoescape
+import getpass
 
 
 def read_data():
@@ -50,7 +51,10 @@ def main():
     host = 'smtp.gmail.com'
     port = 587
     sender = 'colebromaps@gmail.com'
-    password = input("Type your password and press enter:")
+    try:
+        password = getpass.getpass()
+    except Exception as error:
+        print('ERROR', error)
 
     smtp = smtplib.SMTP(host=host, port=port)
     smtp.starttls()
@@ -69,8 +73,6 @@ def main():
         send_email(smtp, sender, d['email'], None, "Subject", t.render(data=d))
 
     smtp.close()
-
-    return "Hello World"
 
 
 if __name__ == '__main__':
