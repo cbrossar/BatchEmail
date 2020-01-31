@@ -1,3 +1,6 @@
 venv/
 __pycache__/
 .DS_Store
+data/tenants.csv
+templates/azure_ch_enablement.html
+.idea/

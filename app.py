@@ -19,7 +19,7 @@ def hello_world():
              'dept_code': '020020942'}]
 
     # read in via csv file!
-    df = pd.read_csv("tenants.csv")
+    df = pd.read_csv("data/tenants.csv")
 
     print(df)
 
@@ -44,7 +44,7 @@ def send_email(recipients, cc, subject, text, files=None, html=True):
     try:
         print('Sending email...')
         msg = MIMEMultipart()
-        msg['From'] = 'cole.brossart@gmail.com'
+        msg['From'] = 'cbrossar@cisco.com'
         msg['To'] = ", ".join(recipients)
         msg['Cc'] = ", ".join(cc)
         msg['Subject'] = subject
