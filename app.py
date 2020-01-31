@@ -11,7 +11,21 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
+    return 'Hello, World!'
 
+
+@app.route('/test')
+def test_account():
+    app_name = 'Cloud Billing Platform'
+    app_ip = '10.203.55.14'
+
+    send_email('cbrossar@cisco.com', None, 'Confirm Registered Account',
+               render_template('user_account_confirm.html', app_name=app_name, app_ip=app_ip))
+    return 'Sent successfully!'
+
+
+@app.route('/azure')
+def azure():
     test = [{'service_admin_email': ['cole.brossart@gmail.com'],
              'service_admin_name': 'Cole',
              'azr_acct_name': 'Cisco-ENB-CSR1000v',
@@ -19,7 +33,7 @@ def hello_world():
              'dept_code': '020020942'}]
 
     # read in via csv file!
-    df = pd.read_csv("data/tenants.csv")
+    df = pd.read_csv("tenants.csv")
 
     print(df)
 
@@ -33,10 +47,10 @@ def hello_world():
         tenants.append(tenant)
 
     for tenant in tenants:
-        send_email(tenant['service_admin_email'], tenant['billing_admin_email'],
-                   "Action Required: Azure Account: " + tenant['azr_acct_name'] + " Configuration in CloudHealth",
-                   render_template('azure_ch_enablement.html', user=tenant))
-    return 'Hello, World!'
+        print(tenant)
+    send_email(tenant['service_admin_email'], tenant['billing_admin_email'],
+               "Action Required: Azure Account: " + tenant['azr_acct_name'] + " Configuration in CloudHealth",
+               render_template('azure_ch_enablement.html', user=tenant))
 
 
 # Sending the GSM lead an email informing them that the empty charge is too high
@@ -44,9 +58,11 @@ def send_email(recipients, cc, subject, text, files=None, html=True):
     try:
         print('Sending email...')
         msg = MIMEMultipart()
-        msg['From'] = 'cbrossar@cisco.com'
-        msg['To'] = ", ".join(recipients)
-        msg['Cc'] = ", ".join(cc)
+        msg['From'] = 'cloudops@cisco.com'
+        msg['To'] = recipients
+        # msg['To'] = ", ".join(recipients)
+        if cc:
+            msg['Cc'] = ", ".join(cc)
         msg['Subject'] = subject
 
         if html:
