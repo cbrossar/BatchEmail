@@ -13,6 +13,55 @@ app = Flask(__name__)
 def hello_world():
     return 'Hello, World!'
 
+@app.route('/email/<recipient>/<subject>/<body>')
+def email(recipient, subject, body):
+    print("Email ...")
+    print(recipient)
+    print(subject)
+    print(body)
+    send_email(recipient, None, subject, body)
+    print('after send email')
+    return "hello"
+
+
+# Sending the GSM lead an email informing them that the empty charge is too high
+def send_email(recipients, cc, subject, text, files=None, html=True):
+    try:
+        print('Sending email...')
+        msg = MIMEMultipart()
+        msg['From'] = 'colebromaps@gmail.com'
+        msg['To'] = recipients
+        # msg['To'] = ", ".join(recipients)
+        if cc:
+            msg['Cc'] = ", ".join(cc)
+        msg['Subject'] = subject
+
+        if html:
+            msg.attach(MIMEText(text, 'html'))
+        else:
+            msg.attach(MIMEText(text))
+
+        for f in files or []:
+            with open(f, "rb") as fil:
+                part = MIMEApplication(
+                    fil.read(),
+                    Name=f
+                )
+            # After the file is closed
+            part['Content-Disposition'] = 'attachment; filename="%s"' % f
+            msg.attach(part)
+
+        smtp = smtplib.SMTP('localhost', timeout=2)
+        smtp.sendmail(msg['From'], recipients, msg.as_string())
+        smtp.close()
+        print("Sent email to: " + str(recipients))
+        return True
+
+    except Exception as ex:
+        print("Could not send email!")
+        print(ex.args)
+        raise ex
+
 
 @app.route('/test')
 def test_account():
@@ -51,42 +100,3 @@ def azure():
     send_email(tenant['service_admin_email'], tenant['billing_admin_email'],
                "Action Required: Azure Account: " + tenant['azr_acct_name'] + " Configuration in CloudHealth",
                render_template('azure_ch_enablement.html', user=tenant))
-
-
-# Sending the GSM lead an email informing them that the empty charge is too high
-def send_email(recipients, cc, subject, text, files=None, html=True):
-    try:
-        print('Sending email...')
-        msg = MIMEMultipart()
-        msg['From'] = 'cloudops@cisco.com'
-        msg['To'] = recipients
-        # msg['To'] = ", ".join(recipients)
-        if cc:
-            msg['Cc'] = ", ".join(cc)
-        msg['Subject'] = subject
-
-        if html:
-            msg.attach(MIMEText(text, 'html'))
-        else:
-            msg.attach(MIMEText(text))
-
-        for f in files or []:
-            with open(f, "rb") as fil:
-                part = MIMEApplication(
-                    fil.read(),
-                    Name=f
-                )
-            # After the file is closed
-            part['Content-Disposition'] = 'attachment; filename="%s"' % f
-            msg.attach(part)
-
-        smtp = smtplib.SMTP('localhost', timeout=2)
-        smtp.sendmail(msg['From'], recipients, msg.as_string())
-        smtp.close()
-        print("Sent email to: " + str(recipients))
-        return True
-
-    except Exception as ex:
-        print("Could not send email!")
-        print(ex.args)
-        raise ex
